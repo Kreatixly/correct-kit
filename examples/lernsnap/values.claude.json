@@ -1,0 +1,14 @@
+{
+  "CRON_WEEKLY": "47 5 * * 5",
+  "MODEL": "claude-opus-5-5",
+  "CONTRACT": ".claude/contract.md",
+  "REPORT_TITLE": "Fehlerklassen-Check",
+  "CORRECTION_LABEL": "agent-mistake",
+  "ADR_AUTO": "docs/adr/0010-fehlerklassen-check-darf-checks-als-draft-pr-umsetzen.md",
+  "MAX_AUTO": "2",
+  "TOOLCHAIN_SETUP": "            - uses: subosito/flutter-action@v2\n              with:\n                  flutter-version: '3.44.7'\n                  channel: 'stable'\n                  cache: true",
+  "INSTALL_CMD": "flutter pub get",
+  "LOCKFILES": "pubspec.lock",
+  "BUILD_TOOLS": "Bash(flutter test:*),Bash(flutter analyze:*),Bash(flutter pub get:*),Bash(dart run tool/check_docs.dart:*)",
+  "VERIFY_CHECKS": "                  run_check \"flutter analyze\" flutter analyze --fatal-infos\n                  run_check \"flutter test\" flutter test\n                  run_check \"check_docs\" dart run tool/check_docs.dart"
+}

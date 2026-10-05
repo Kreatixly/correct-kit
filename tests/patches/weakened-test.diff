@@ -1,0 +1,6 @@
+--- a/test/unit/example_rules_test.dart
++++ b/test/unit/example_rules_test.dart
+@@ -1,3 +1,2 @@
+ import 'package:flutter_test/flutter_test.dart';
+-    expect(flags('x'), isTrue);
+     expect(flags('y'), isFalse);

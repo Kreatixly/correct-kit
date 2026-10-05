@@ -1,0 +1,10 @@
+--- a/lib/core/io.dart
++++ b/lib/core/io.dart
+@@ -1,1 +1,2 @@
+ import 'dart:io';
++void x(File f, List<int> b) => f.writeAsBytes(b);
+--- a/test/unit/example_rules_test.dart
++++ b/test/unit/example_rules_test.dart
+@@ -1,1 +1,2 @@
+ import 'package:flutter_test/flutter_test.dart';
++// probe: writeAsBytes stays allowed in tests

@@ -1,0 +1,35 @@
+# correct-kit (Copilot): policy check for pull requests that implement a correction class.
+# Make it a required status check (branch protection / ruleset) so a class PR cannot merge
+# outside the policy. Runs no repository code from the PR: the policy script and config are
+# read from the base branch.
+#
+# Note: pull requests opened by the Copilot coding agent may need "Approve and run workflows"
+# before checks start. correct-setup verifies this for the repository.
+
+name: Correct Policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    if: contains(github.event.pull_request.labels.*.name, 'correct-auto') || startsWith(github.head_ref, 'copilot/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - name: Check the PR diff against the policy
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch -q origin "$HEAD_SHA"
+          git diff --binary "$BASE_SHA...$HEAD_SHA" > /tmp/pr.diff
+          bash .github/correct/correct_policy.sh /tmp/pr.diff .github/correct/correct_policy.conf

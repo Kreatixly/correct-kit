@@ -1,0 +1,10 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -1,1 +1,2 @@
+ name: CI
++# changed
+--- a/test/unit/example_rules_test.dart
++++ b/test/unit/example_rules_test.dart
+@@ -1,1 +1,2 @@
+ import 'package:flutter_test/flutter_test.dart';
++// guard

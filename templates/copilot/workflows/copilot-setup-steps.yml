@@ -1,0 +1,24 @@
+# correct-kit (Copilot): environment for the Copilot coding agent, so it can run the
+# contract's verify commands while implementing a correction class.
+# The job must be called `copilot-setup-steps` (GitHub convention; correct-setup checks the
+# current docs for the repository's GitHub edition).
+
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths: [.github/workflows/copilot-setup-steps.yml]
+  pull_request:
+    paths: [.github/workflows/copilot-setup-steps.yml]
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+{{TOOLCHAIN_SETUP_COPILOT}}
+      - name: Install dependencies
+        run: {{INSTALL_CMD}}

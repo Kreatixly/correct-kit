@@ -1,0 +1,12 @@
+{
+  "name": "correct-kit",
+  "owner": { "name": "Kreatixly" },
+  "plugins": [
+    {
+      "name": "correct-kit",
+      "source": "./",
+      "description": "Skills correct, architect, recall and correct-setup plus workflow templates for a weekly correction loop.",
+      "version": "0.1.0"
+    }
+  ]
+}

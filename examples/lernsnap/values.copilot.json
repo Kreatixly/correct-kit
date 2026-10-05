@@ -1,0 +1,9 @@
+{
+  "CRON_WEEKLY": "47 5 * * 5",
+  "REPORT_TITLE": "Fehlerklassen-Check",
+  "CORRECTION_LABEL": "agent-mistake",
+  "AGENT_PR_QUERY": "author:app/copilot-swe-agent",
+  "MODELS_MODEL": "openai/gpt-4.1",
+  "TOOLCHAIN_SETUP_COPILOT": "      - uses: subosito/flutter-action@v2\n        with:\n          flutter-version: '3.44.7'\n          channel: 'stable'\n          cache: true",
+  "INSTALL_CMD": "flutter pub get"
+}

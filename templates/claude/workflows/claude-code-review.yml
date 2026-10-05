@@ -1,0 +1,42 @@
+# correct-kit (Claude): automatic review on every pull request.
+# Review findings are the main evidence for the weekly correction report.
+#
+# Lessons built in (each one cost a silent, green, useless run before):
+#   - sub-agents in the foreground (CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)
+#   - the allowlist must hold the tools the review command declares, plus read access
+#   - the review must know the checkout already is the PR merge commit (no git fetch)
+#   - a changed workflow only runs after merge; test it on the next PR
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        env:
+          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
+          plugins: 'code-review@claude-code-plugins'
+          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*),Bash(git diff:*),Read,Grep,Glob,Task" --append-system-prompt "The working tree is already the merge commit of this pull request (refs/pull/N/merge): read the changed files with Read, Grep and Glob directly, never git fetch. List earlier comments with gh pr view N --json comments,reviews."'
+          # Debugging a silent run: add `show_full_output: true` temporarily (private repos only).

@@ -1,6 +1,9 @@
 {
   "name": "correct-kit",
-  "owner": { "name": "Kreatixly" },
+  "description": "correct-kit: weekly correction loop for coding agents (Claude Code or GitHub Copilot).",
+  "owner": {
+    "name": "Kreatixly"
+  },
   "plugins": [
     {
       "name": "correct-kit",

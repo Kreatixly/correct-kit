@@ -8,6 +8,11 @@
 # including ordinary feature PRs by the coding agent, passes this check without a policy run.
 # The job always runs, so the required check never waits on a skipped job.
 #
+# For class PRs it checks two things: the diff stays inside the policy (correct_policy.sh), and
+# the description carries the proof (check_proof.sh): a section '{{PROOF_TERMS}}' – heading first,
+# then the terms it must name (red on the past, green today, false alarms). Editing the
+# description re-runs the check.
+#
 # Note: pull requests opened by the Copilot coding agent may need "Approve and run workflows"
 # before checks start. correct-setup verifies this for the repository.
 
@@ -64,3 +69,10 @@ jobs:
           git fetch -q origin "$HEAD_SHA"
           git diff --binary "$BASE_SHA...$HEAD_SHA" > /tmp/pr.diff
           bash .github/correct/correct_policy.sh /tmp/pr.diff .github/correct/correct_policy.conf
+      - name: Check the proof in the PR description
+        if: ${{ !cancelled() && steps.scope.outputs.class == 'true' }}
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n' "${PR_BODY:-}" > /tmp/pr-body.md
+          bash .github/correct/check_proof.sh /tmp/pr-body.md '{{PROOF_TERMS}}'

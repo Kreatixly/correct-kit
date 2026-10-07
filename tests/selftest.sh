@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # correct-kit self-test: renders the templates with the LernSnap example values, checks that
 # every workflow is valid YAML with shell-valid run blocks, and that the policy script accepts
-# an allowed patch and rejects the three kinds of violation. Needs bash, python3 (PyYAML), git.
+# an allowed patch and rejects each kind of violation, the proof check, and the class-issue
+# planner (tests/test_correct_issues.py). Needs bash, python3 (PyYAML), git.
 set -u
 cd "$(dirname "$0")/.."
 fail=0
@@ -49,6 +50,28 @@ expect denied-path.diff 1
 expect weakened-test.diff 1
 expect forbidden-pattern.diff 1
 expect exception-added.diff 1
+
+# Proof section in a class PR description.
+proof() { # <body> <0|1>
+  bash templates/policy/check_proof.sh "tests/proof/$1" 'Nachweis|rot|grün|Fehlalarm' > /dev/null 2>&1; got=$?
+  [ "$got" = "$2" ] && ok "proof $1 -> $got" || bad "proof $1: expected $2, got $got"
+}
+proof ok.md 0
+proof no-section.md 1
+proof missing-term.md 1
+
+# Class issues and agenda: config renders to valid JSON, the planner passes its tests.
+if python3 scripts/render.py examples/lernsnap/values.copilot.json templates/copilot/weekly.json "$out/weekly.json" \
+   && python3 -c 'import json, sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$out/weekly.json"; then
+  ok "render copilot weekly.json"
+else
+  bad "render copilot weekly.json"
+fi
+if python3 -X utf8 tests/test_correct_issues.py > "$out/unit.log" 2>&1; then
+  ok "correct_issues.py unit tests"
+else
+  cat "$out/unit.log"; bad "correct_issues.py unit tests"
+fi
 
 rm -rf "$out"
 exit $fail

@@ -86,13 +86,34 @@ change their own mind).
      missed this case. Record the episode and name the gap in the check. This
      is the most valuable signal there is.
 3. Record the episode in the tracker, one issue per class (contract,
-   `## Correction issues`): find the open or closed issue with the marker
-   `<!-- correct-class: <slug> -->` and add the episode as a comment; reopen a
-   closed one. Without an issue, create one with the contract's label and title
-   prefix. Episode: date, branch or PR, the wrong move in one sentence, why it
-   looked right locally, files touched. Paraphrase; no chat quotes, no secrets.
-   Without tool access to the tracker, print the ready `gh` command instead.
-4. Answer in one or two lines: class, first / repeat / relapse, what was
+   `## Correction issues`). Find the issue with the marker
+   `<!-- correct-class: <slug> -->` among all issues with the correction label,
+   open or closed, and reuse its slug. Add the episode as **one comment**: a
+   line in plain words plus the marker the weekly run reads,
+
+   ```
+   <one line: what the agent did wrong> (<branch or PR>)
+   <!-- correct-episode {"date": "YYYY-MM-DD", "source": "/correct log", "ref": "<YYYY-MM-DD>/<branch>/<n>", "what": "<one line>", "author": "<your login>"} -->
+   ```
+
+   Do not edit the body, reopen, close or relabel: the weekly run owns the
+   lifecycle (relapse, rejected, quiet) and the team owns the decision.
+   Without an issue, create one: title = the contract's title prefix + a short
+   name, labels = the correction label and `correct:triage`, body =
+
+   ```
+   <!-- correct-class: <slug> -->
+   <!-- correct-state {"slug": "<slug>", "wrong_move": "<one sentence>", "why_plausible": "<one sentence>", "level": "architecture|types|lint|test|docs", "level_detail": "<one sentence>", "why_not_higher": "<one sentence>", "test_case": "<commit or PR, or empty>", "occurrences": [], "total": 0} -->
+   **Falscher Zug:** <one sentence>
+   ```
+
+   and the episode as its first comment. The weekly run renders the full body.
+   Paraphrase; no chat quotes, file contents or secrets. Without tool access to
+   the tracker, print the ready `gh` command instead.
+4. A rule or check the episode calls for goes through a pull request, never as
+   a direct commit: changes to agent instructions, the rule table or checks are
+   reviewed by the team like code.
+5. Answer in one or two lines: class, first / repeat / relapse, what was
    recorded, what you propose.
 
 ## Mode: `/correct` (analyse, plan only)
@@ -197,7 +218,11 @@ Only for a class the owner approved. Follow the contract's delivery rules
 (branch naming, draft PR, one class per change, docs in the same commit,
 who merges). Implement the proven fix, re-run the proof from step 4 against the
 real change, update the rule table, shrink or remove the prose rule the check
-now enforces, run the verify commands, and deliver.
+now enforces, run the verify commands, and deliver. The class issue's
+acceptance criteria are the definition of done. The PR description has a
+section headed as the contract's `## Delivery` says (e.g. `## Nachweis`) with
+the commands and decisive output for red on the past, green today and false
+alarms; a required check rejects a class PR without it.
 If the class has a correction issue, the change says `Closes #<n>` so the
 issue closes as completed with the merge — never close it by hand.
 If the real change behaves differently from the prototype, stop and report.

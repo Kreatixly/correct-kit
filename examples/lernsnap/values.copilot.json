@@ -6,5 +6,9 @@
   "MODELS_MODEL": "openai/gpt-4.1",
   "TOOLCHAIN_SETUP_COPILOT": "      - uses: subosito/flutter-action@v2\n        with:\n          flutter-version: '3.44.7'\n          channel: 'stable'\n          cache: true",
   "INSTALL_CMD": "flutter pub get",
-  "RUNS_ON": "ubuntu-latest"
+  "RUNS_ON": "ubuntu-latest",
+  "REPORT_LANGUAGE": "German",
+  "PROOF_TERMS": "Nachweis|rot|grün|Fehlalarm",
+  "CLASS_TITLE_PREFIX": "Fehlerklasse: ",
+  "INSTRUCTION_FILES_JSON": "[\".github/copilot-instructions.md\", \".github/instructions/*.instructions.md\", \"AGENTS.md\", \".github/agent-contract.md\"]"
 }

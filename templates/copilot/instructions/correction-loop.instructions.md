@@ -13,5 +13,7 @@ applyTo: "**"
   order, architecture, types, a lint/CI check, a test; docs only for judgement calls.
 - Never weaken, skip or delete a test or a baseline to get green, and never add an exception to
   a check on your own.
-- A pull request that implements a correction class links its issue (`Closes #<n>`); the
-  required `correct-policy` check then keeps it inside `.github/correct/correct_policy.conf`.
+- A pull request that implements a correction class links its issue (`Closes #<n>`), meets the
+  acceptance criteria in that issue, and carries the proof section the contract names under
+  `## Delivery`. The required `correct-policy` check enforces the policy and the proof section.
+- Changes to agent instructions, the rule table or checks go through a pull request.

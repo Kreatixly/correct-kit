@@ -8,7 +8,7 @@ vorlegen. Du mergst oder schließt.
 
 Entstanden in [LernSnap](examples/lernsnap/) (Flutter), angelehnt an pstack von poteto.
 Läuft mit **Claude Code** (vollautomatisch über GitHub Actions) oder mit **GitHub Copilot**
-(Belege automatisch, Umsetzung über den Copilot Coding Agent).
+(Klassen-Issues automatisch, Entscheidung im Team, Umsetzung über den Copilot Coding Agent).
 
 ## Die Methode
 
@@ -33,19 +33,83 @@ der Zeile mit Grund, Ablaufdatum und Freigabe, und nur Menschen setzen sie.
 Review-Kommentare, Reverts und Fix-ups, Korrektur-Issues (Label `agent-mistake`), lokale
 Chatverläufe über `/glean`.
 
-## Der Wochenablauf
+## Der Ablauf mit GitHub Copilot (Team-Triage)
+
+Zwei Schleifen: **lokal und sofort** bei jedem Entwickler, **wöchentlich** als QS-Lauf über alle.
+Das Team entscheidet einmal pro Woche, was umgesetzt wird; danach kommt jeder erst wieder beim PR dazu.
+
+```mermaid
+flowchart TD
+  classDef auto fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+  classDef human fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef opt fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-dasharray: 4 3
+
+  subgraph LOCAL["Lokal, sofort – jeder Entwickler"]
+    K["Du korrigierst Copilot"]:::human --> L["/log-correction<br/>Episode ins Klassen-Issue"]:::human
+  end
+
+  subgraph WEEKLY["Wöchentlich – GitHub Actions, schreibt nur Issues"]
+    E["Belege sammeln<br/>Reviews, Reverts, rote CI, Episoden"]:::auto
+    M["GitHub Models<br/>gruppiert zu Klassen, nur JSON"]:::opt
+    D["Abdrift-Prüfung<br/>neue Regeln ohne Check"]:::auto
+    W["Skript schreibt Klassen-Issues<br/>und eine Tagesordnung"]:::auto
+    E --> M --> W
+    E --> D --> W
+  end
+
+  L --> E
+  R["Review-Kommentare, Reverts"]:::auto --> E
+  W --> T{"Team-Termin:<br/>umsetzen?"}:::human
+  T -->|"correct:verworfen"| X["geschlossen – ohne neue<br/>Belege nicht wieder"]:::auto
+  T -->|"correct:umsetzen"| A["Copilot zuweisen<br/>oder /correct apply"]:::human
+  A --> P["Draft-PR mit<br/>Abschnitt Nachweis"]:::auto
+  P --> G["correct-policy, Pflicht-Check:<br/>Policy und Nachweis"]:::auto
+  G --> V{"Review:<br/>mergen?"}:::human
+  V -->|ja| C["Check im Repo,<br/>Klassen-Issue zu"]:::auto
+  V -->|nein| X
+  C -. "Rückfall: neue Episode" .-> W
+```
+
+🟦 automatisch · 🟨 Mensch · ⬜ gestrichelt: optional (empfohlen)
+
+| | Automatisch | Mensch | Optional |
+|---|---|---|---|
+| **Einmalig** | Setup-Agent: Bestandsaufnahme, Vertrag, Dateien, ein Draft-PR | Bestandsaufnahme und Vertrag bestätigen, Setup-PR mergen; Admin: Pflicht-Check, Coding Agent, erlaubte Actions | GitHub Models (`CORRECT_MODELS_ENABLED`), `CORRECT_REPORT_ASSIGNEE` |
+| **Sofort** | – | `/log-correction` nach einer Korrektur | Label `agent-mistake` von Hand |
+| **Wöchentlich** | Belege, Klassen-Issues (max. 3 neue), Tagesordnung, Rückfälle öffnen, Abdrift, ruhige Klassen schließen | Team-Termin: `correct:umsetzen` oder `correct:verworfen` | tiefere Analyse mit `/correct analyse` |
+| **Umsetzung** | Coding Agent baut den PR; `correct-policy` prüft Policy und Nachweis | Issue an Copilot zuweisen (oder lokal `/correct apply`); ggf. „Approve and run workflows“ | `/architect` bei Schnittstellen |
+| **Abschluss** | Merge schließt das Klassen-Issue | Review: mergen oder schließen | – |
+
+Wie die Issues aussehen und wie viele es werden: [docs/issue-format.md](docs/issue-format.md).
+
+## Der Ablauf mit Claude Code
+
+```mermaid
+flowchart TD
+  classDef auto fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+  classDef human fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef opt fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-dasharray: 4 3
+
+  R["Review, Reverts,<br/>Label agent-mistake"]:::auto --> W
+  L["/correct log und /glean<br/>lokal"]:::opt --> W
+  W["correct-weekly:<br/>Claude analysiert mit Nachweis"]:::auto --> B["Bericht-Issue"]:::auto
+  B --> S{"CORRECT_ACT_ENABLED?"}:::human
+  S -->|aus| O["/correct apply<br/>in einer Sitzung"]:::human
+  S -->|an| A["correct-act: auswählen,<br/>umsetzen, Gate"]:::auto
+  A --> P["Draft-PR mit Nachweis"]:::auto
+  O --> P
+  P --> V{"Review:<br/>mergen?"}:::human
+  V -->|ja| C["Check im Repo"]:::auto
+  V -->|nein| X["abgelehnt – ohne neue<br/>Belege nicht wieder"]:::auto
+```
 
 | Wann | Baustein | Darf | Ergebnis |
 |---|---|---|---|
 | laufend | automatisches Review auf PRs | kommentieren | Befunde = wichtigste Belege |
-| sofort | `/correct log` direkt nach deiner Korrektur (Copilot: `/log-correction`) | Issues | Episode im Klassen-Issue; Regel schon da, aber nicht durchgesetzt = Wiederholung |
-| laufend | Label `agent-mistake`, lokal `/glean` | Issues | ein Issue pro Fehlerklasse |
+| sofort | `/correct log` nach deiner Korrektur; lokal `/glean` | Issues | Episode im Klassen-Issue |
 | wöchentlich | `correct-weekly` | nur lesen | **ein** Bericht-Issue: Klassen, neu / wiederkehrend / Rückfall, vorgeschlagene Ebene |
-| danach | `correct-act` (Claude, Kill-Switch) | Draft-PR | Auswahl 🤖 auto / 👤 owner / ✖ skip als Kommentar; je 🤖-Klasse Umsetzung mit Nachweis, Gate, Draft-PR |
-| du | mergen oder schließen | Freigabe | Merge = Freigabe; Schließen = abgelehnt, wird ohne neue Belege nicht wieder vorgeschlagen |
-
-Bei Copilot ersetzt der Copilot Coding Agent `correct-act`: Du (oder ein Workflow) weist ihm ein
-Klassen-Issue zu, er öffnet einen PR, die Pflicht-Prüfung `correct-policy` hält ihn im Rahmen.
+| danach | `correct-act` (Kill-Switch) | Draft-PR | Auswahl 🤖 auto / 👤 owner / ✖ skip als Kommentar; je 🤖-Klasse Umsetzung mit Nachweis, Gate, Draft-PR |
+| du | mergen oder schließen | Freigabe | Merge = Freigabe; Schließen = abgelehnt |
 
 ## Konstruktionsregeln (teuer gelernt)
 
@@ -91,20 +155,22 @@ zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner G
 | `skills/glean/` | Korrekturen aus lokalen Claude-Code-Chatverläufen (nur CLI, lokal) |
 | `skills/correct-setup/` | Installation in ein Repo |
 | `templates/contract.md` | Projektvertrag (alles Projektspezifische an einem Ort) |
-| `templates/policy/` | `correct_policy.sh` + Konfiguration |
+| `templates/policy/` | `correct_policy.sh` + Konfiguration, `check_proof.sh` (Nachweis im PR) |
 | `templates/claude/workflows/` | `correct-weekly`, `correct-act`, `claude-code-review` |
-| `templates/copilot/` | Workflows, Prompt-Dateien, Instructions |
+| `templates/copilot/` | Workflows, Prompt-Dateien, Instructions, `correct_issues.py` (Klassen-Issues und Tagesordnung) |
+| `docs/issue-format.md` | Aufbau, Mengen und Lebenslauf der Issues, mit echten Beispielen |
 | `templates/adr/`, `templates/docs/`, `templates/guards/` | Entscheidungs-, Doku- und Wächter-Vorlagen |
 | `scripts/render.py` | füllt Platzhalter, verweigert halb gefüllte Dateien |
 | `examples/lernsnap/` | vollständige Werte, Policy und Wächter-Test aus dem Ursprungsprojekt |
-| `tests/selftest.sh` | Render-, YAML-, Shell- und Policy-Prüfung des Kits |
+| `tests/` | `selftest.sh` (Render, YAML, Shell, Policy, Nachweis) und Tests für `correct_issues.py` |
 
 ## Was du selbst tun musst
 
 - Claude: Secret `CLAUDE_CODE_OAUTH_TOKEN`; Actions-Einstellung „Allow GitHub Actions to create
   and approve pull requests“; Repo-Variable `CORRECT_ACT_ENABLED=true`, wenn Auto-PRs starten sollen.
 - Copilot: `correct-policy` als Pflicht-Prüfung; Coding Agent aktiv, Workflows auf seinen PRs
-  erlaubt; optional `CORRECT_MODELS_ENABLED=true` für GitHub Models.
+  erlaubt; `CORRECT_MODELS_ENABLED=true` für GitHub Models (empfohlen, sonst entstehen neue
+  Klassen nur aus `/log-correction`); ein fester Team-Termin pro Woche.
 - Beide: optional `CORRECT_REPORT_ASSIGNEE` (Login), wenn Bericht-Issues zugewiesen werden sollen.
 - Enterprise: Policies für Coding Agent, GitHub Models, erlaubte Actions und Runner liegen oft
   auf Enterprise- oder Org-Ebene; das Setup listet, was ein Admin freigeben muss.
@@ -116,4 +182,7 @@ zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner G
   nach heutigem Stand Coding Agent und GitHub Models).
 - Toolchain-Setup und Wächter-Test werden pro Stack erzeugt; der erste Lauf in einem neuen
   Stack braucht einen Blick von dir.
-- Die Copilot-Variante ist halbautomatisch: Die Analyse der Woche stößt du im Chat an.
+- Copilot: Die Klassen des Wochenlaufs sind ein Entwurf von GitHub Models ohne Nachweis; der
+  Nachweis kommt im PR. Die vollautomatische Stufe (Agent-Task wählt und setzt selbst um) ist als
+  Stufe 2 in `templates/adr/team-triage.md` beschrieben, aber nicht eingebaut.
+- Texte der Klassen-Issues und der Tagesordnung sind derzeit deutsch (`correct_issues.py`).

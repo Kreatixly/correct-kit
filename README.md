@@ -121,27 +121,83 @@ flowchart TD
 6. **Tracker klein halten:** ein Issue pro Klasse, ein offener Bericht; Erledigtes schließt der Fix-PR per `Closes #n`.
 7. **Erst nachsehen, dann anlegen:** bestehende ADRs, Glossar, Kontext und Agenten-Anweisungen werden erweitert, nicht dupliziert.
 
-## Installation
+## Einrichtung
+
+Das Setup (Skill `correct-setup`) erzeugt alle Dateien und legt sie als **einen Draft-PR** an.
+Was nur Menschen mit Admin-Rechten tun können, steht in der Reihenfolge unten; ✋ markiert
+Schritte, bei denen der Setup-Agent auf deine Bestätigung wartet.
+
+### GitHub Copilot (Team-Triage)
+
+**A. Vorher – Enterprise- oder Org-Admin** (Einstellungen weiter oben sperren die Repo-Ebene)
+
+1. Copilot-Lizenzen (Business oder Enterprise) für alle, die mitarbeiten.
+2. Policy **Copilot coding agent** auf Enterprise- und Org-Ebene erlauben.
+3. Policy **GitHub Models** erlauben (empfohlen; ohne Models entstehen neue Klassen nur aus
+   `/log-correction`). Mit dem Datenschutz klären: Review-Kommentare und Issue-Titel gehen an
+   das Modell.
+4. Falls nur ausgewählte Actions erlaubt sind: `actions/checkout` und `actions/ai-inference`
+   freigeben. Falls gehostete Runner gesperrt sind: das Runner-Label für das Setup notieren.
+
+**B. Setup im Ziel-Repo – du und der Setup-Agent**
+
+5. correct-kit neben das Ziel-Repo klonen (oder vorher in eure Enterprise-Org spiegeln, wenn
+   github.com von dort nicht erreichbar ist).
+6. Im Ziel-Repo Copilot Chat im **Agent-Modus** öffnen und eingeben:
+
+   ```text
+   Lies <pfad-zu-correct-kit>/skills/correct-setup/SKILL.md und folge ihm. Ziel: GitHub Copilot.
+   ```
+
+   Der Agent fragt nach Berichtssprache und Termin des Wochenlaufs (mit Zeitzone).
+7. ✋ **Bestandsaufnahme bestätigen:** Tabelle *gefunden → wiederverwenden / erweitern /
+   anlegen* (ADRs, Glossar, Agenten-Anweisungen, Workflows, Labels).
+8. ✋ **Projektvertrag bestätigen** (`.github/agent-contract.md`): Verify-Kommandos, Regeln,
+   Grenzen. Mit `(unverified)` markierte Punkte klären.
+9. Der Agent erzeugt die Dateien, prüft sie und öffnet den Draft-PR `correct-kit/setup`. Im PR
+   steht, was der erste Wochenlauf anlegen würde (Probelauf `apply --dry-run`) und was er nicht
+   prüfen konnte.
+10. **Setup-PR reviewen und mergen.** Workflows gibt es erst danach auf dem Default-Branch.
+
+**C. Nach dem Merge – Repo-Admin**
+
+11. Repo-Variable `CORRECT_MODELS_ENABLED=true` (Settings → Secrets and variables → Actions →
+    Variables); optional `CORRECT_REPORT_ASSIGNEE` (Login, dem die Tagesordnung zugewiesen wird).
+12. Copilot coding agent für das Repo aktivieren und festlegen, ob Workflows auf seinen PRs ohne
+    „Approve and run workflows“ starten dürfen.
+13. Ruleset oder Branch Protection für den Default-Branch: **`correct-policy` als Pflicht-Check**.
+    Der Check erscheint in der Auswahl erst, wenn er einmal gelaufen ist (z. B. auf einem
+    beliebigen PR); im Ruleset kann man den Namen auch direkt eintragen.
+
+**D. Erster Lauf und Betrieb – das Team**
+
+14. Actions → **Correct Weekly** → *Run workflow*. Die Labels legt der Lauf selbst an.
+15. Tagesordnung (Label `correct-report`) lesen. Die Zeile **Klassifizierung** muss
+    „GitHub Models (Entwurf …)“ zeigen; steht dort „kein gültiges JSON“, das Modell prüfen.
+16. Einen festen **Team-Termin pro Woche** für die Tagesordnung vereinbaren.
+17. Alle Entwickler: nach jeder Korrektur `/log-correction` im Copilot Chat (die Instructions
+    erinnern daran).
+18. Beim ersten Klassen-PR prüfen, dass `correct-policy` gelaufen ist (Policy und Nachweis).
 
 ### Claude Code
 
-```text
-/plugin marketplace add Kreatixly/correct-kit
-/plugin install correct-kit@correct-kit
-```
+1. Im Claude Code CLI:
 
-Dann im Ziel-Repo: **„Richte correct-kit ein“** (Skill `correct-setup`). Das Setup fragt zuerst
-nach dem Ziel (Claude Code, GitHub Copilot oder beides), macht eine Bestandsaufnahme und legt
-alles als **einen Draft-PR** an.
+   ```text
+   /plugin marketplace add Kreatixly/correct-kit
+   /plugin install correct-kit@correct-kit
+   ```
 
-### GitHub Copilot (ohne Claude)
-
-Repo klonen oder als Ordner neben das Ziel-Repo legen und im Copilot-Chat (Agent-Modus) im
-Ziel-Repo ausführen:
-
-```text
-Lies <pfad-zu-correct-kit>/skills/correct-setup/SKILL.md und folge ihm. Ziel: GitHub Copilot.
-```
+2. Im Ziel-Repo: **„Richte correct-kit ein“** und Ziel *Claude Code* wählen (oder *beides*).
+3. ✋ Bestandsaufnahme bestätigen, ✋ Vertrag (`.claude/contract.md`) bestätigen; der Agent
+   legt den Draft-PR `correct-kit/setup` an.
+4. Secret `CLAUDE_CODE_OAUTH_TOKEN` anlegen (in Firmen-Repos die von euch freigegebene
+   Anmeldung verwenden).
+5. Setup-PR reviewen und mergen.
+6. Für automatische PRs (`correct-act`): Actions-Einstellung „Allow GitHub Actions to create and
+   approve pull requests“ (liegt in Enterprises oft auf Org-Ebene).
+7. Actions → **Correct Weekly** → *Run workflow*; den Bericht lesen.
+8. Erst wenn die Berichte taugen: Repo-Variable `CORRECT_ACT_ENABLED=true` (Kill-Switch an).
 
 Copilot-Dateinamen und -Funktionen (Prompt-Dateien, Coding Agent, GitHub Models) ändern sich
 zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner GitHub-Variante.
@@ -163,18 +219,6 @@ zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner G
 | `scripts/render.py` | füllt Platzhalter, verweigert halb gefüllte Dateien |
 | `examples/lernsnap/` | vollständige Werte, Policy und Wächter-Test aus dem Ursprungsprojekt |
 | `tests/` | `selftest.sh` (Render, YAML, Shell, Policy, Nachweis) und Tests für `correct_issues.py` |
-
-## Was du selbst tun musst
-
-- Claude: Secret `CLAUDE_CODE_OAUTH_TOKEN`; Actions-Einstellung „Allow GitHub Actions to create
-  and approve pull requests“; Repo-Variable `CORRECT_ACT_ENABLED=true`, wenn Auto-PRs starten sollen.
-- Copilot: `correct-policy` als Pflicht-Prüfung; Coding Agent aktiv, Workflows auf seinen PRs
-  erlaubt; `CORRECT_MODELS_ENABLED=true` für GitHub Models (empfohlen, sonst entstehen neue
-  Klassen nur aus `/log-correction`); ein fester Team-Termin pro Woche.
-- Beide: optional `CORRECT_REPORT_ASSIGNEE` (Login), wenn Bericht-Issues zugewiesen werden sollen.
-- Enterprise: Policies für Coding Agent, GitHub Models, erlaubte Actions und Runner liegen oft
-  auf Enterprise- oder Org-Ebene; das Setup listet, was ein Admin freigeben muss.
-- Nach dem Merge: `correct-weekly` einmal von Hand starten und den Bericht lesen.
 
 ## Grenzen
 

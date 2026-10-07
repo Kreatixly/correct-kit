@@ -21,8 +21,13 @@ Läuft mit **Claude Code** (vollautomatisch über GitHub Actions) oder mit **Git
 5. **Doku** — nur für Ermessensfragen
 
 **Nachweis** — ein Fix zählt erst, wenn der Check auf dem historischen Fehler **rot**, heute
-**grün** und ohne **Fehlalarme** ist. Dazu zwei, drei naheliegende Umgehungen rot machen, nicht
-nur den alten Diff.
+**grün** und ohne **Fehlalarme** ist und in den Verify-Kommandos läuft (lokal und in CI dasselbe).
+Dazu zwei, drei naheliegende Umgehungen rot machen, nicht nur den alten Diff.
+
+**Prosa schrumpft** — erzwingt ein Check eine Regel, wird ihr Text in den Agenten-Anweisungen
+zum Verweis; kann der Fehler gar nicht mehr passieren, fliegt die Regel aus der Tabelle.
+Verbreitete Altfälle hält ein **Ratchet** (Baseline darf nur schrumpfen); **Ausnahmen** stehen an
+der Zeile mit Grund, Ablaufdatum und Freigabe, und nur Menschen setzen sie.
 
 **Belege statt Gefühl** — eine Klasse braucht mindestens zwei unabhängige Vorkommen:
 Review-Kommentare, Reverts und Fix-ups, Korrektur-Issues (Label `agent-mistake`), lokale
@@ -33,6 +38,7 @@ Chatverläufe über `/recall`.
 | Wann | Baustein | Darf | Ergebnis |
 |---|---|---|---|
 | laufend | automatisches Review auf PRs | kommentieren | Befunde = wichtigste Belege |
+| sofort | `/correct log` direkt nach deiner Korrektur (Copilot: `/log-correction`) | Issues | Episode im Klassen-Issue; Regel schon da, aber nicht durchgesetzt = Wiederholung |
 | laufend | Label `agent-mistake`, lokal `/recall` | Issues | ein Issue pro Fehlerklasse |
 | wöchentlich | `correct-weekly` | nur lesen | **ein** Bericht-Issue: Klassen, neu / wiederkehrend / Rückfall, vorgeschlagene Ebene |
 | danach | `correct-act` (Claude, Kill-Switch) | Draft-PR | Auswahl 🤖 auto / 👤 owner / ✖ skip als Kommentar; je 🤖-Klasse Umsetzung mit Nachweis, Gate, Draft-PR |
@@ -80,7 +86,7 @@ zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner G
 
 | Pfad | Was |
 |---|---|
-| `skills/correct/` | `/correct` (Analyse), `/correct init`, `/correct apply <Klasse>` |
+| `skills/correct/` | `/correct` (Analyse), `/correct init`, `/correct apply <Klasse>`, `/correct log` |
 | `skills/architect/` | Schnittstelle zuerst, agentenfreundliches Design |
 | `skills/recall/` | Korrekturen aus lokalen Claude-Code-Chatverläufen (nur CLI, lokal) |
 | `skills/correct-setup/` | Installation in ein Repo |
@@ -99,11 +105,15 @@ zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner G
   and approve pull requests“; Repo-Variable `CORRECT_ACT_ENABLED=true`, wenn Auto-PRs starten sollen.
 - Copilot: `correct-policy` als Pflicht-Prüfung; Coding Agent aktiv, Workflows auf seinen PRs
   erlaubt; optional `CORRECT_MODELS_ENABLED=true` für GitHub Models.
+- Beide: optional `CORRECT_REPORT_ASSIGNEE` (Login), wenn Bericht-Issues zugewiesen werden sollen.
+- Enterprise: Policies für Coding Agent, GitHub Models, erlaubte Actions und Runner liegen oft
+  auf Enterprise- oder Org-Ebene; das Setup listet, was ein Admin freigeben muss.
 - Nach dem Merge: `correct-weekly` einmal von Hand starten und den Bericht lesen.
 
 ## Grenzen
 
-- Für GitHub gebaut (github.com; GHE.com und GHES mit Prüfung im Setup).
+- Für GitHub gebaut (github.com inkl. GHE Cloud; GHE.com mit Prüfung im Setup; auf GHES fehlen
+  nach heutigem Stand Coding Agent und GitHub Models).
 - Toolchain-Setup und Wächter-Test werden pro Stack erzeugt; der erste Lauf in einem neuen
   Stack braucht einen Blick von dir.
 - Die Copilot-Variante ist halbautomatisch: Die Analyse der Woche stößt du im Chat an.

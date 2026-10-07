@@ -1,6 +1,6 @@
 ---
 description: Settle an interface before code crosses a module boundary (correct-kit architect).
-mode: agent
+agent: agent
 ---
 
 Read `.github/correct-kit/skills/architect/SKILL.md` and `.github/agent-contract.md` and follow

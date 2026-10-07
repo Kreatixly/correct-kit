@@ -44,7 +44,7 @@ jobs:
         if: >-
             github.event_name != 'workflow_run' ||
             (github.event.workflow_run.conclusion == 'success' && vars.CORRECT_ACT_ENABLED == 'true')
-        runs-on: ubuntu-latest
+        runs-on: {{RUNS_ON}}
         timeout-minutes: 30
         permissions:
             contents: read
@@ -171,7 +171,7 @@ jobs:
         name: Implement ${{ matrix.slug }}
         needs: select
         if: needs.select.outputs.has_auto == 'true'
-        runs-on: ubuntu-latest
+        runs-on: {{RUNS_ON}}
         timeout-minutes: 60
         permissions:
             contents: read
@@ -274,7 +274,7 @@ jobs:
         name: Gate ${{ matrix.slug }}
         needs: [select, fix]
         if: always() && needs.select.outputs.has_auto == 'true'
-        runs-on: ubuntu-latest
+        runs-on: {{RUNS_ON}}
         timeout-minutes: 30
         permissions:
             contents: read
@@ -333,7 +333,7 @@ jobs:
         name: Open draft PRs
         needs: [select, gate]
         if: always() && needs.select.outputs.has_auto == 'true'
-        runs-on: ubuntu-latest
+        runs-on: {{RUNS_ON}}
         timeout-minutes: 15
         permissions:
             contents: write

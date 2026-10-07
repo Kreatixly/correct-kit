@@ -85,7 +85,8 @@ owner's confirmation**.
 Write a values file (JSON, kept out of the PR) and render templates with
 `python scripts/render.py <values.json> <template> <output>`; it refuses half-filled output.
 The LernSnap example (`examples/lernsnap/values.claude.json`, `correct_policy.conf`) shows every
-value.
+value. `RUNS_ON` is the runner label: `ubuntu-latest` unless the organization requires its own
+runners (check the existing CI; enterprises often restrict hosted runners).
 
 **Common (both targets)**
 
@@ -113,10 +114,10 @@ value.
 | File | From |
 |---|---|
 | `.github/correct-kit/skills/{correct,architect}/SKILL.md` | copies; the prompt files read them |
-| `.github/prompts/correct.prompt.md`, `architect.prompt.md` | `templates/copilot/prompts/` |
+| `.github/prompts/correct.prompt.md`, `architect.prompt.md`, `log-correction.prompt.md` | `templates/copilot/prompts/` |
 | `.github/instructions/correction-loop.instructions.md` | `templates/copilot/instructions/` |
 | `.github/workflows/correct-weekly.yml` | `templates/copilot/workflows/correct-weekly.yml` |
-| `.github/workflows/correct-policy.yml` | `templates/copilot/workflows/correct-policy.yml` |
+| `.github/workflows/correct-policy.yml` | `templates/copilot/workflows/correct-policy.yml` (rendered: correction label, runner) |
 | `.github/workflows/copilot-setup-steps.yml` | `templates/copilot/workflows/copilot-setup-steps.yml`, unless one exists |
 
 Copilot file names, front matter (`mode:`/`agent:`), the setup-steps job name, GitHub Models
@@ -124,12 +125,24 @@ availability and limits, and how to assign an issue to the coding agent change b
 releases and editions (github.com, GHE.com, GHES). **Check them against the current GitHub docs
 for this repository's edition** and adapt; say in the PR what you verified and what not.
 
+In an enterprise (GHE Cloud, GHE.com) also check, and list what an admin must change:
+
+- **Allowed actions:** if the enterprise or organization allows only selected actions, the
+  workflows need `actions/checkout` and, for GitHub Models, `actions/ai-inference`.
+- **Policies on enterprise and organization level:** Copilot coding agent, GitHub Models,
+  "Allow GitHub Actions to create and approve pull requests". A repository setting cannot
+  override a policy that is locked above it.
+- **Runners:** whether hosted runners are allowed, or which labels to use (`RUNS_ON`, and the
+  `copilot-setup-steps` job for the coding agent).
+- **Data:** the weekly digest sends review comments and issue titles to GitHub Models when
+  `CORRECT_MODELS_ENABLED` is set; confirm that this is allowed for the repository.
+
 ## 5. Verify before the pull request
 
 - `render.py` produced every file without missing values; every workflow parses as YAML and
   every `run:` block passes `bash -n`.
 - The policy script accepts a sample allowed patch and rejects: a denied path, a removed test
-  assertion, a forbidden pattern. Show the three outputs.
+  assertion, a forbidden pattern, an added `correct-allow(` exception. Show the four outputs.
 - The guard test (Claude) is green on the new workflows and its self-test passes.
 - The repo's verify commands are green.
 
@@ -142,7 +155,10 @@ only the owner can do:
 - secret `CLAUDE_CODE_OAUTH_TOKEN` (Claude);
 - Actions setting "Allow GitHub Actions to create and approve pull requests" (Claude, `correct-act`);
 - repo variable `CORRECT_ACT_ENABLED=true` when automatic PRs should start (Claude);
-- `correct-policy` as a required check in branch protection or a ruleset (Copilot);
+- `correct-policy` as a required check in branch protection or a ruleset (Copilot); it runs on
+  every PR and only enforces the policy on PRs that close a correction issue or carry `correct-auto`;
+- repo variable `CORRECT_REPORT_ASSIGNEE` (a user login) if report issues should be assigned;
+  `github.repository_owner` is an organization in company repositories and cannot be assigned;
 - Copilot coding agent enabled, workflows allowed to run on its PRs, `CORRECT_MODELS_ENABLED`
   if GitHub Models may be used (Copilot);
 - after merge: run `correct-weekly` once by hand and read the issue.

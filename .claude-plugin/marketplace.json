@@ -9,7 +9,7 @@
       "name": "correct-kit",
       "source": "./",
       "description": "Skills correct, architect, recall and correct-setup plus workflow templates for a weekly correction loop.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }

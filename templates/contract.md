@@ -22,8 +22,10 @@ All must be green before anything counts as done:
 
 - Project rules: {{RULES_SOURCE}} (e.g. the hard rules in the agent instruction file).
 - Decisions not to re-litigate: {{ADR_DIR}}.
-- Rule table (rule → enforcement → evidence): {{RULE_TABLE}}. Every delivery that moves a rule
-  up the ladder updates it in the same commit.
+- Rule table (rule → enforcement → evidence): {{RULE_TABLE}} (best in the agent instruction
+  file, where agents read it). Every delivery that moves a rule up the ladder updates it in the
+  same commit and shrinks the prose rule to a pointer; a rule whose mistake can no longer happen
+  leaves the table.
 
 ## Enforcement levels
 
@@ -59,7 +61,10 @@ All must be green before anything counts as done:
 - Nothing is merged by an agent. The owner merges.
 - Unattended runs read and open issues only ({{ADR_WEEKLY_REF}}). Exception, if adopted:
   `correct-act` opens draft PRs within `.github/correct/correct_policy.conf` ({{ADR_AUTO_REF}}).
-- Never weaken a rule or a test to make a check pass.
+- Never weaken a rule or a test to make a check pass. Deleting a hollow test is the owner's call.
+- Exceptions to a check sit on the offending line with reason, expiry date and approver, e.g.
+  `// correct-allow(<rule>): <reason> · until YYYY-MM-DD · approved @<user>`. Agents never add
+  one on their own.
 
 ## Delivery
 

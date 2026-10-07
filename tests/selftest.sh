@@ -16,7 +16,7 @@ for t in templates/claude/workflows/*.yml; do
     bad "render $t"
   fi
 done
-cp templates/copilot/workflows/correct-policy.yml "$out/copilot-correct-policy.yml"
+python3 scripts/render.py examples/lernsnap/values.copilot.json templates/copilot/workflows/correct-policy.yml "$out/copilot-correct-policy.yml" && ok "render copilot correct-policy" || bad "render copilot correct-policy"
 python3 scripts/render.py examples/lernsnap/values.copilot.json templates/copilot/workflows/correct-weekly.yml "$out/copilot-correct-weekly.yml" && ok "render copilot correct-weekly" || bad "render copilot correct-weekly"
 python3 scripts/render.py examples/lernsnap/values.copilot.json templates/copilot/workflows/copilot-setup-steps.yml "$out/copilot-setup-steps.yml" && ok "render copilot-setup-steps" || bad "render copilot-setup-steps"
 
@@ -48,6 +48,7 @@ expect allowed.diff 0
 expect denied-path.diff 1
 expect weakened-test.diff 1
 expect forbidden-pattern.diff 1
+expect exception-added.diff 1
 
 rm -rf "$out"
 exit $fail

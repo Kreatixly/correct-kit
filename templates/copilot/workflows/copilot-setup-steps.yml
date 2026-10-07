@@ -14,7 +14,7 @@ on:
 
 jobs:
   copilot-setup-steps:
-    runs-on: ubuntu-latest
+    runs-on: {{RUNS_ON}}
     permissions:
       contents: read
     steps:

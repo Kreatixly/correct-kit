@@ -3,6 +3,11 @@
 # outside the policy. Runs no repository code from the PR: the policy script and config are
 # read from the base branch.
 #
+# A PR is a class PR when it carries the label `correct-auto` or closes an issue labelled
+# `{{CORRECTION_LABEL}}` (the coding agent links the issue it was assigned). Every other PR,
+# including ordinary feature PRs by the coding agent, passes this check without a policy run.
+# The job always runs, so the required check never waits on a skipped job.
+#
 # Note: pull requests opened by the Copilot coding agent may need "Approve and run workflows"
 # before checks start. correct-setup verifies this for the repository.
 
@@ -10,22 +15,48 @@ name: Correct Policy
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, ready_for_review]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review]
 
 permissions:
   contents: read
+  pull-requests: read
+  issues: read
 
 jobs:
   policy:
-    if: contains(github.event.pull_request.labels.*.name, 'correct-auto') || startsWith(github.head_ref, 'copilot/')
-    runs-on: ubuntu-latest
+    runs-on: {{RUNS_ON}}
     steps:
+      - name: Is this a correction class PR?
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          N: ${{ github.event.pull_request.number }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+          class=false
+          case ",$LABELS," in *,correct-auto,*) class=true ;; esac
+          if [ "$class" = false ]; then
+            linked=$(gh api graphql -F owner="${R%%/*}" -F name="${R#*/}" -F n="$N" -f query='
+              query($owner: String!, $name: String!, $n: Int!) {
+                repository(owner: $owner, name: $name) { pullRequest(number: $n) {
+                  closingIssuesReferences(first: 20) { nodes { number labels(first: 30) { nodes { name } } } }
+                } }
+              }' --jq '[.data.repository.pullRequest.closingIssuesReferences.nodes[]
+                       | select([.labels.nodes[].name] | index("{{CORRECTION_LABEL}}")) | .number] | join(",")')
+            if [ -n "$linked" ]; then class=true; echo "Closes correction issue(s): $linked"; fi
+          fi
+          echo "class=$class" >> "$GITHUB_OUTPUT"
+          [ "$class" = true ] || echo "Not a correction class PR: policy does not apply."
       - name: Checkout base
+        if: steps.scope.outputs.class == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
       - name: Check the PR diff against the policy
+        if: steps.scope.outputs.class == 'true'
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}

@@ -1,0 +1,10 @@
+--- a/lib/core/io.dart
++++ b/lib/core/io.dart
+@@ -1,1 +1,2 @@
+ import 'dart:io';
++void y() {} // correct-allow(rule-13): quick fix · until 2099-01-01 · approved @nobody
+--- a/test/unit/example_rules_test.dart
++++ b/test/unit/example_rules_test.dart
+@@ -1,1 +1,2 @@
+ import 'package:flutter_test/flutter_test.dart';
++// probe

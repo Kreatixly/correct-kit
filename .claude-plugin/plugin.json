@@ -1,6 +1,6 @@
 {
   "name": "correct-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Correct the environment, not the agent: find mistakes agents repeat, turn them into checks, and run the loop weekly as GitHub workflows (Claude Code or GitHub Copilot).",
   "author": { "name": "Kreatixly" },
   "license": "MIT",

@@ -32,7 +32,7 @@ permissions:
 jobs:
     correct:
         name: Correction report
-        runs-on: ubuntu-latest
+        runs-on: {{RUNS_ON}}
         timeout-minutes: 30
 
         steps:
@@ -116,7 +116,7 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
                   EXEC_FILE: ${{ steps.correct.outputs.execution_file }}
-                  OWNER: ${{ github.repository_owner }}
+                  ASSIGNEE: ${{ vars.CORRECT_REPORT_ASSIGNEE }}
               run: |
                   set -euo pipefail
                   jq -r 'if type=="array" then ([.[]|select(.type=="result")]|last|.result) else .result end // empty' "$EXEC_FILE" > report.txt
@@ -126,11 +126,14 @@ jobs:
                     echo "::error::No valid report (STATUS line or body missing)"
                     exit 1
                   fi
+                  # Assignee from a repo variable: github.repository_owner is an organization in
+                  # company repos and cannot be assigned.
+                  assign=(); [ -z "${ASSIGNEE:-}" ] || assign=(--assignee "$ASSIGNEE")
                   gh label create correct-report --color 5319e7 --description 'Weekly correction report (correct-kit)' 2>/dev/null || true
                   prev=$(gh issue list --label correct-report --state open --json number --jq '.[].number')
                   title="{{REPORT_TITLE}} W$(date +%V)/$(date +%G)"
                   case "$status" in
-                    ok) url=$(gh issue create --label correct-report --assignee "$OWNER" --title "$title" --body-file body.md) ;;
+                    ok) url=$(gh issue create --label correct-report "${assign[@]}" --title "$title" --body-file body.md) ;;
                     empty) url=$(gh issue create --label correct-report --title "$title - nothing new" --body-file body.md) ;;
                     *) echo "::error::Unknown STATUS: $status"; exit 1 ;;
                   esac
@@ -143,9 +146,10 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-                  OWNER: ${{ github.repository_owner }}
+                  ASSIGNEE: ${{ vars.CORRECT_REPORT_ASSIGNEE }}
               run: |
+                  assign=(); [ -z "${ASSIGNEE:-}" ] || assign=(--assignee "$ASSIGNEE")
                   gh label create correct-report --color 5319e7 2>/dev/null || true
-                  gh issue create --label correct-report --assignee "$OWNER" \
+                  gh issue create --label correct-report "${assign[@]}" \
                     --title "{{REPORT_TITLE}} W$(date +%V)/$(date +%G) - run failed" \
                     --body "The weekly correction report failed. Run: $RUN_URL"

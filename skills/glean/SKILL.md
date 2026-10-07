@@ -1,9 +1,9 @@
 ---
-name: recall
+name: glean
 description: Rebuild what agents got corrected for from local Claude Code transcripts, git history and the issue tracker, and keep one tracked issue per recurring mistake class. Use before `/correct`, when asked which mistakes keep coming back, or periodically on the owner's machine. Runs only where transcripts exist (local CLI, not cloud sessions).
 ---
 
-# Recall
+# Glean
 
 Every time the owner corrects an agent, that correction is evidence. It lives
 in the local transcripts and is lost when nobody reads it. This skill reads it,

@@ -68,8 +68,10 @@ done < <(git apply --numstat "$patch")
 
 # Tests are never weakened: per test file, no fewer test/assert lines than before, no skips.
 if [ -n "$test_marker" ] && [ "${#test_paths[@]}" -gt 0 ]; then
-  weakened=$(awk -v marker="$test_marker" -v files="$(printf '%s\n' "${test_paths[@]}")" '
-    BEGIN { n = split(files, arr, "\n"); for (i = 1; i <= n; i++) if (arr[i] != "") t[arr[i]] = 1 }
+  # The marker goes in through ENVIRON, not `awk -v`: -v expands backslash escapes, which turns
+  # `\(` into `(`, an invalid regex, and awk dies without reporting anything.
+  if ! weakened=$(MARKER="$test_marker" FILES="$(printf '%s\n' "${test_paths[@]}")" awk '
+    BEGIN { marker = ENVIRON["MARKER"]; n = split(ENVIRON["FILES"], arr, "\n"); for (i = 1; i <= n; i++) if (arr[i] != "") t[arr[i]] = 1 }
     /^\+\+\+ b\// { f = substr($0, 7); next }
     /^--- / { next }
     (f in t) && /^-/ && $0 ~ marker { rem[f]++ }
@@ -77,8 +79,9 @@ if [ -n "$test_marker" ] && [ "${#test_paths[@]}" -gt 0 ]; then
     END {
       for (k in rem) if (rem[k] > add[k]) print k ": " rem[k] " test lines removed, " (add[k] + 0) " added"
       for (k in skip) print k ": test skipped"
-    }' "$patch")
-  if [ -n "$weakened" ]; then
+    }' "$patch"); then
+    violation "test check failed to run (test_marker: $test_marker)"
+  elif [ -n "$weakened" ]; then
     while IFS= read -r w; do violation "test weakened: $w"; done <<< "$weakened"
   fi
 fi

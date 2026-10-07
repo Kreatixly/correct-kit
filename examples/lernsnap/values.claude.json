@@ -10,5 +10,6 @@
   "INSTALL_CMD": "flutter pub get",
   "LOCKFILES": "pubspec.lock",
   "BUILD_TOOLS": "Bash(flutter test:*),Bash(flutter analyze:*),Bash(flutter pub get:*),Bash(dart run tool/check_docs.dart:*)",
-  "VERIFY_CHECKS": "                  run_check \"flutter analyze\" flutter analyze --fatal-infos\n                  run_check \"flutter test\" flutter test\n                  run_check \"check_docs\" dart run tool/check_docs.dart"
+  "VERIFY_CHECKS": "                  run_check \"flutter analyze\" flutter analyze --fatal-infos\n                  run_check \"flutter test\" flutter test\n                  run_check \"check_docs\" dart run tool/check_docs.dart",
+  "RUNS_ON": "ubuntu-latest"
 }

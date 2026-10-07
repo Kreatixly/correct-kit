@@ -1,0 +1,11 @@
+{
+  "correction_label": "{{CORRECTION_LABEL}}",
+  "title_prefix": "{{CLASS_TITLE_PREFIX}}",
+  "report_title": "{{REPORT_TITLE}}",
+  "min_occurrences": 2,
+  "max_new": 3,
+  "stale_days": 90,
+  "proof_terms": "{{PROOF_TERMS}}",
+  "instruction_files": {{INSTRUCTION_FILES_JSON}},
+  "policy_conf": ".github/correct/correct_policy.conf"
+}

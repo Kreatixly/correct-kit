@@ -2,7 +2,7 @@
 """Find candidate agent corrections in local Claude Code transcripts.
 
 Prints one JSON object per line. A candidate is *not* yet a correction: the
-`recall` skill reads the context and decides. This script only narrows ~MBs
+`glean` skill reads the context and decides. This script only narrows ~MBs
 of transcript down to the moments worth reading.
 
 Kinds:

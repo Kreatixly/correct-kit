@@ -1,6 +1,6 @@
 # Project contract — {{PROJECT_NAME}}
 
-Read by the project-neutral skills `correct`, `architect` and `recall` (correct-kit). Keep the
+Read by the project-neutral skills `correct`, `architect` and `glean` (correct-kit). Keep the
 `##` headings; the skills look them up by name. Everything project-specific lives here.
 Mark anything not verified with `(unverified)` until the owner confirms it.
 
@@ -46,14 +46,14 @@ All must be green before anything counts as done:
 - Earlier reports: issues labelled `correct-report`; PRs labelled `correct-auto` closed without
   merge are rejected fixes.
 - {{EXTRA_EVIDENCE}}
-- Local Claude Code transcripts — only on a developer's machine, read through `/recall`.
+- Local Claude Code transcripts — only on a developer's machine, read through `/glean`.
 
 ## Correction issues
 
 - Label: `{{CORRECTION_LABEL}}`. Title prefix: `{{CLASS_TITLE_PREFIX}}`.
 - One issue per class, marked `<!-- correct-class: <slug> -->` in the body.
 - min occurrences: 2 · max new per run: 3 · stale after: 90 days.
-- Report folder for `/recall`: `.claude/recall/` (git-ignored).
+- Report folder for `/glean`: `.claude/glean/` (git-ignored).
 
 ## Limits
 

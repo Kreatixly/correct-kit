@@ -110,10 +110,10 @@ Use every source the contract lists. Typical ones:
 - **Review comments** — from humans and review bots on merged and closed PRs.
 - **Correction log** — issues or comments carrying the contract's
   correction label. This is the highest-signal source: each entry is a time
-  the owner had to correct an agent. Class issues kept by `recall` or
+  the owner had to correct an agent. Class issues kept by `glean` or
   `/correct log` (one per class, with its episodes) count as classes with that
-  many occurrences. If transcripts exist and the newest `recall` report is
-  older than the window, suggest running `/recall` first.
+  many occurrences. If transcripts exist and the newest `glean` report is
+  older than the window, suggest running `/glean` first.
 - **Recurring reports** — earlier survey or audit issues, including the ones
   closed as not planned (refuted — do not re-propose).
 - **Agent instruction files and gotcha docs** — every "never do X" was learned

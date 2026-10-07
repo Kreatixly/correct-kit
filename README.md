@@ -31,7 +31,7 @@ der Zeile mit Grund, Ablaufdatum und Freigabe, und nur Menschen setzen sie.
 
 **Belege statt Gefühl** — eine Klasse braucht mindestens zwei unabhängige Vorkommen:
 Review-Kommentare, Reverts und Fix-ups, Korrektur-Issues (Label `agent-mistake`), lokale
-Chatverläufe über `/recall`.
+Chatverläufe über `/glean`.
 
 ## Der Wochenablauf
 
@@ -39,7 +39,7 @@ Chatverläufe über `/recall`.
 |---|---|---|---|
 | laufend | automatisches Review auf PRs | kommentieren | Befunde = wichtigste Belege |
 | sofort | `/correct log` direkt nach deiner Korrektur (Copilot: `/log-correction`) | Issues | Episode im Klassen-Issue; Regel schon da, aber nicht durchgesetzt = Wiederholung |
-| laufend | Label `agent-mistake`, lokal `/recall` | Issues | ein Issue pro Fehlerklasse |
+| laufend | Label `agent-mistake`, lokal `/glean` | Issues | ein Issue pro Fehlerklasse |
 | wöchentlich | `correct-weekly` | nur lesen | **ein** Bericht-Issue: Klassen, neu / wiederkehrend / Rückfall, vorgeschlagene Ebene |
 | danach | `correct-act` (Claude, Kill-Switch) | Draft-PR | Auswahl 🤖 auto / 👤 owner / ✖ skip als Kommentar; je 🤖-Klasse Umsetzung mit Nachweis, Gate, Draft-PR |
 | du | mergen oder schließen | Freigabe | Merge = Freigabe; Schließen = abgelehnt, wird ohne neue Belege nicht wieder vorgeschlagen |
@@ -88,7 +88,7 @@ zwischen GitHub-Versionen; das Setup prüft sie gegen die aktuelle Doku deiner G
 |---|---|
 | `skills/correct/` | `/correct` (Analyse), `/correct init`, `/correct apply <Klasse>`, `/correct log` |
 | `skills/architect/` | Schnittstelle zuerst, agentenfreundliches Design |
-| `skills/recall/` | Korrekturen aus lokalen Claude-Code-Chatverläufen (nur CLI, lokal) |
+| `skills/glean/` | Korrekturen aus lokalen Claude-Code-Chatverläufen (nur CLI, lokal) |
 | `skills/correct-setup/` | Installation in ein Repo |
 | `templates/contract.md` | Projektvertrag (alles Projektspezifische an einem Ort) |
 | `templates/policy/` | `correct_policy.sh` + Konfiguration |

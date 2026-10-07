@@ -17,6 +17,9 @@
   delivery order by frequency first.
 - Copilot: prompt file `log-correction`, instructions point to it; prompt front matter `agent:`.
 - Setup: enterprise checklist (allowed actions, policies, runners, data for GitHub Models).
+- Skill `recall` renamed to `glean` (no clash with pstack's `/recall`, which restores working
+  context). Report folder `.claude/glean/`. Existing installs: rename `.claude/skills/recall/`,
+  `.claude/recall/` and the contract lines that mention it.
 
 ## 0.1.0
 
